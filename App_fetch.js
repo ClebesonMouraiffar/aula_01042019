@@ -1,43 +1,71 @@
 import React, { Component } from 'react';
+import { Text, View, TextInput, Button, FlatList, } from 'react-native';
+import { SearchBar } from 'react-native-elements';
 
-import { View, TextInput, FlatList, Button} from 'react-native';
-//import console = require('console');
+
 
 export default class App extends Component {
 
-  constructor(){
+  constructor() {
     super()
     this.state = {
-      users :[]
+      query: '',
+      loading: false,
+      users: []
     }
   }
 
-  _buscaNomes(){
-    fetch('https://api.github.com/search/users?q=tom')
+  _getUsers() {
+    this.setState({ loading: true })
+    fetch(`https://api.github.com/search/users?q=${this.state.query}`)
       .then((response) => response.json())
       .then((responseJson) => {
+        let users = []
         console.log(responseJson)
-        userName = responseJson.items.map(item => item.login)
-        return this.setState({
-          users: userName
+        _users = responseJson.items.map(item => item.login)
+        _users.forEach(element => {
+          users.push({ key: element })
+        });
+        this.setState({
+          users,
+          loading: false
         })
       })
       .catch((error) => {
         console.error(error)
-      });
+      })
   }
+
+
   render() {
     return (
-      <View style = {StyleSheet.btn}>
-      <TextInput
-      style={style.input}
-      onChangeText={(query) => this.setState({query})}
-      value={this.}
-        <Button/>
-        <FlatList>
-        </FlatList>
-      </View>
-    )
+      <View>
+        <View>
+          {/* <TextInput
+          onChangeText={(query) => this.setState({ query })}
+          value={this.state.query}
+        />*/}
+          <SearchBar
+            placeholder="Digite o nome do usuario para buscar..."
+            onChangeText={(query) => this.setState({ query })}
+            showLoading={this.state.loading}
+            value= {this.state.query}
+          />
+          <Button onPress={() => this._getUsers()} title="Buscar"></Button>
+        </View>
 
+        <FlatList
+          data={this.state.users}
+          renderItem={({ item }) => {
+            return (
+              <View>
+                <Text>{item.key}</Text>
+              </View>)
+
+          }} />
+
+
+      </View>
+    );
   }
 }
